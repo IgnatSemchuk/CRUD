@@ -58,11 +58,24 @@ export class UsersTable {
         this.renderUsersTable();
       };
 
+
       if (event.target.matches('[data-edit]')) {
-        const targetRow = event.target.closest('tr');
-        console.dir(targetRow, this.page);
-        await this.loadUsers();
-        this.renderUsersTable();
+        event.target.closest('tr').innerHTML = await this.updateUser(+event.target.dataset.id);
+      };
+
+
+      if (event.target.matches('[data-update]')) {
+        console.log('in');
+        const editTableRow = event.target.closest('tr');
+        const user = {};
+        user.id = +event.target.dataset.id;
+        user.name = editTableRow.querySelector('[name="name"]').value;
+        user.email = editTableRow.querySelector('[name="email"]').value;
+        user.description = editTableRow.querySelector('[name="description"]').value;
+        user.createdAt = new Date();
+        console.log(user);
+        await this.backend.update(user);
+        editTableRow.innerHTML = this.renderUser(user);
       };
     });
 
@@ -110,8 +123,26 @@ export class UsersTable {
     this.users = await this.backend.get(options);
   }
 
+  async updateUser(id) {
+    const user = await this.backend.get(id);
+    console.log(user);
+
+    return `
+      <td colspan = '4'>
+        <form class="form-inline">
+          <input type="text" class="col form-control mb-2 mr-sm-2" name="name" value="${user.name}">
+          <input type="email" class="col form-control mb-2 mr-sm-2" name="email" value="${user.email}">
+          <textarea class="col form-control" name="description" rows="2">${user.description}</textarea>
+        </form>
+      </td>
+      <td class="align-middle p-auto">
+        <button type="button" class="btn btn-outline-primary mb-2" data-update data-id="${id}">Update</button>
+      </td>
+    `;
+  }
+
   renderUsersTable() {
-    const users = this.users.map(user => this.renderUser(user));
+    const users = this.users.map(user => `<tr>${this.renderUser(user)}</tr>`);
 
     document.querySelector('.si-users-table').innerHTML = `
       <table class="table table-striped table-sm">
@@ -119,8 +150,8 @@ export class UsersTable {
           <tr>
             <th scope="col">name</th>
             <th scope="col">email</th>
-            <th scope="col">createdAt</th>
             <th scope="col">description</th>
+            <th scope="col">createdAt</th>
             <th scope="col"></th>
           </tr>
         </thead>
@@ -132,16 +163,14 @@ export class UsersTable {
 
   renderUser({id, name, email, description, createdAt}) {
     return `
-      <tr>
-        <td>${name}</td>
-        <td>${email}</td>
-        <td>${createdAt}</td>
-        <td>${description}</td>
-        <td>
-          <button type="button" class="btn btn-outline-primary" data-edit data-id="${id}">Edit</button>
-          <button type="button" class="btn btn-outline-danger" data-delete data-id="${id}">Delete</button>
-        </td>
-      </tr>`;
+      <td>${name}</td>
+      <td>${email}</td>
+      <td>${description}</td>
+      <td>${createdAt}</td>
+      <td>
+        <button type="button" class="btn btn-outline-primary" data-edit data-id="${id}">Edit</button>
+        <button type="button" class="btn btn-outline-danger" data-delete data-id="${id}">Delete</button>
+      </td>`;
   }
 
   render() {
@@ -210,6 +239,13 @@ export class UsersTable {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div class="col-auto">
+            <form class="form-inline">
+              <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
           </div>
         </div>
 

@@ -28,12 +28,13 @@ export class AppBackend {
     });
   }
 
-  update(id) {
-    return fetch(`${this.baseURI}/users/${id}`, {
+  update(object) {
+    return fetch(`${this.baseURI}/users/${object.id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
-        }
+        },
+        body: JSON.stringify(object)
     });
   }
 
