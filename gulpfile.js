@@ -3,8 +3,9 @@ const bs = require('browser-sync').create();
 
 const rootDir = 'app';
 
-gulp.task('reload', function () {
+gulp.task('reload', function (cb) {
     bs.reload();
+    cb();
 });
 
 gulp.task('default', function () {

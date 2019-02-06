@@ -5,25 +5,28 @@ export class UsersTable {
   constructor() {
     this.users = [];
     this.backend = new AppBackend('https://5bf417c491c25b0013a3b9a2.mockapi.io/users');
-    this.page = this.initPage();
-    this.limitRows;
+    this.page = this.initPageIndex();
+    this.limitTableRows;
   }
 
   async init() {
     this.render();
-    this.limitRows = document.getElementById('si-input-limit').value;
+    this.limitTableRows = document.getElementById('si-input-limit').value;
     await this.loadUsers();
     this.renderUsersTable();
 
     const next = document.querySelector('[data-next]');
     const prev = document.querySelector('[data-preview]');
-    
+    prev.setAttribute('disabled', 'disabled');
+    if (this.users.length < this.limitTableRows) {
+      next.setAttribute('disabled', 'disabled');
+    }
+
     document.addEventListener('click', async (event) => {
-      if (event.target.matches('[data-preview]')) {
-        if (next.hasAttribute('disabled')) {
+      if (next.hasAttribute('disabled')) {
           next.removeAttribute('disabled');
         };
-
+      if (event.target.matches('[data-preview]')) {
         if (this.page() === 2) {
           event.target.setAttribute('disabled', 'disabled');
         }
@@ -37,10 +40,9 @@ export class UsersTable {
         if (prev.hasAttribute('disabled')) {
           prev.removeAttribute('disabled');
         };
-
         this.page(1);
         await this.loadUsers();
-        if (this.users.length < this.limitRows) {
+        if (this.users.length < this.limitTableRows) {
           event.target.setAttribute('disabled', 'disabled');
         }
         if (this.users.length === 0) {
@@ -65,7 +67,6 @@ export class UsersTable {
 
 
       if (event.target.matches('[data-update]')) {
-        console.log('in');
         const editTableRow = event.target.closest('tr');
         const user = {};
         user.id = +event.target.dataset.id;
@@ -73,10 +74,17 @@ export class UsersTable {
         user.email = editTableRow.querySelector('[name="email"]').value;
         user.description = editTableRow.querySelector('[name="description"]').value;
         user.createdAt = new Date();
-        console.log(user);
         await this.backend.update(user);
-        editTableRow.innerHTML = this.renderUser(user);
+        editTableRow.innerHTML = this.renderUser(await this.backend.get(user.id));
       };
+
+
+      if (event.target.closest('[data-sort]')) {
+        const colName = event.target.closest('th').textContent.trim();
+        console.log(colName);
+        await this.backend.sort(colName);
+        this.renderUsersTable();
+      }
     });
 
     document.getElementById('si-add-user-form').addEventListener('submit', async (event) => {
@@ -91,42 +99,38 @@ export class UsersTable {
       await this.backend.create(options);
       await this.loadUsers();
       this.renderUsersTable();
+      $('#modal-add-user').modal('hide');
     });
 
     document.getElementById('si-input-limit').addEventListener('change', async (event) => {
-      this.limitRows = event.target.value;
-      this.page = this.initPage();
+      this.limitTableRows = event.target.value;
+      this.page = this.initPageIndex();
       await this.loadUsers();
       this.renderUsersTable();
-      if (!prev.hasAttribute('disabled')) {
-        prev.setAttribute('disabled', 'disabled');
-      };
-      if (next.hasAttribute('disabled')) {
-        next.removeAttribute('disabled');
-      };
+      prev.setAttribute('disabled', 'disabled');
+      if (this.users.length < this.limitTableRows) {
+        next.setAttribute('disabled', 'disabled');
+      }
     });
   }
 
-  initPage() {
-      let page = 1;
+  initPageIndex() {
+      let currentPageOfTable = 1;
       return (step = 0) => {
-        page += step;
-        return page;
+        currentPageOfTable += step;
+        return currentPageOfTable;
       }
   }
 
   async loadUsers() {
     const options = {};
     options.page = this.page();
-    options.limit = this.limitRows;
-    console.log(options);
+    options.limit = this.limitTableRows;
     this.users = await this.backend.get(options);
   }
 
   async updateUser(id) {
     const user = await this.backend.get(id);
-    console.log(user);
-
     return `
       <td colspan = '4'>
         <form class="form-inline">
@@ -135,7 +139,7 @@ export class UsersTable {
           <textarea class="col form-control" name="description" rows="2">${user.description}</textarea>
         </form>
       </td>
-      <td class="align-middle p-auto">
+      <td class="align-middle text-center">
         <button type="button" class="btn btn-outline-primary mb-2" data-update data-id="${id}">Update</button>
       </td>
     `;
@@ -146,13 +150,41 @@ export class UsersTable {
 
     document.querySelector('.si-users-table').innerHTML = `
       <table class="table table-striped table-sm">
-        <thead class="thead-dark">
+        <thead class="thead-dark ">
           <tr>
-            <th scope="col">name</th>
-            <th scope="col">email</th>
-            <th scope="col">description</th>
-            <th scope="col">createdAt</th>
-            <th scope="col"></th>
+            <th scope="col" class="align-middle text-center">
+              name
+              <button type="button" class="close" aria-label="Close" data-sort>
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5" width="15" height="15">
+                  <path fill="#ffffff" d='M2 0L0 2h4zm0 5L0 3h4z'/>
+                </svg>
+              </button>
+            </th>
+            <th scope="col" class="align-middle text-center">
+              email
+              <button type="button" class="close" aria-label="Close" data-sort>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5" width="15" height="15">
+                  <path fill="#ffffff" d='M2 0L0 2h4zm0 5L0 3h4z'/>
+                </svg>
+              </button>
+            </th>
+            <th scope="col" class="align-middle text-center">
+              description
+              <button type="button" class="close" aria-label="Close" data-sort>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5" width="15" height="15">
+                  <path fill="#ffffff" d='M2 0L0 2h4zm0 5L0 3h4z'/>
+                </svg>
+              </button>
+            </th>
+            <th scope="col" class="align-middle text-center">
+              createdAt
+              <button type="button" class="close" aria-label="Close" data-sort>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5" width="15" height="15">
+                  <path fill="#ffffff" d='M2 0L0 2h4zm0 5L0 3h4z'/>
+                </svg>
+              </button>
+            </th>
+            <th scope="col" class="align-middle text-center"></th>
           </tr>
         </thead>
         <tbody>
@@ -194,14 +226,14 @@ export class UsersTable {
           </div>
 
           <div class="col-auto">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#Modal">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-add-user">
               Add user
             </button>
-            <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+            <div class="modal fade" id="modal-add-user" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
                   <div class="modal-header">
-                    <h5 class="modal-title" id="ModalLabel">Modal title</h5>
+                    <h5 class="modal-title" id="ModalLabel">Add user</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -257,7 +289,7 @@ export class UsersTable {
 
         <div class="row si-footer-table">
           <div class="col-auto ml-auto">
-            <button type="button" class="btn btn-primary" data-preview disabled>
+            <button type="button" class="btn btn-primary" data-preview>
               Preview
             </button>
             <button type="button" class="btn btn-primary" data-next>

@@ -46,4 +46,9 @@ export class AppBackend {
         }
     });
   }
+
+  sort(colName) {
+    return fetch(`${this.baseURI}/users?sortBy=${colName}`)
+      .then((response) => response.json());
+  }
 }
