@@ -1,31 +1,48 @@
 export class AppBackend {
   constructor() {
-
+    this.baseURI = 'https://5bf417c491c25b0013a3b9a2.mockapi.io';
   }
 
-  get() {
-    return fetch('https://5bf417c491c25b0013a3b9a2.mockapi.io/users')
-      .then((response) => response.json())
+  get(options) {
+    if (!options) {
+      return fetch(`${this.baseURI}/users`)
+        .then((response) => response.json());
+    };
+    if (typeof options === 'number') {
+      return fetch(`${this.baseURI}/users/${options}`)
+        .then((response) => response.json());
+    };
+    if (typeof options === 'object') {
+      return fetch(`${this.baseURI}/users?page=${options.page}&limit=${options.limit}`)
+      .then((response) => response.json());
+    };
   }
 
   create(object) {
-    return fetch('https://5bf417c491c25b0013a3b9a2.mockapi.io/users', {
-        method: "POST", // *GET, POST, PUT, DELETE, etc. only-if-cached
+    return fetch(`${this.baseURI}/users`, {
+        method: "POST",
         headers: {
-          "Accept": "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(object), // body data type must match 
-    })
+        body: JSON.stringify(object),
+    });
+  }
+
+  update(id) {
+    return fetch(`${this.baseURI}/users/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
   }
 
   delete(id) {
-    return fetch(`https://5bf417c491c25b0013a3b9a2.mockapi.io/users/${id}`, {
-        method: "DELETE", // *GET, POST, PUT, DELETE, etc. only-if-cached
+    return fetch(`${this.baseURI}/users/${id}`, {
+        method: "DELETE",
         headers: {
-            "Accept": "application/json",
             "Content-Type": "application/json"
         }
-    })
+    });
   }
 }
