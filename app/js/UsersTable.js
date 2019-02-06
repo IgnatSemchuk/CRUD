@@ -40,7 +40,7 @@ export class UsersTable {
 
         this.page(1);
         await this.loadUsers();
-        if (this.users.length < this.limitRows - 1) {
+        if (this.users.length < this.limitRows) {
           event.target.setAttribute('disabled', 'disabled');
         }
         if (this.users.length === 0) {
@@ -85,6 +85,12 @@ export class UsersTable {
       this.page = this.initPage();
       await this.loadUsers();
       this.renderUsersTable();
+      if (!prev.hasAttribute('disabled')) {
+        prev.setAttribute('disabled', 'disabled');
+      };
+      if (next.hasAttribute('disabled')) {
+        next.removeAttribute('disabled');
+      };
     });
   }
 
