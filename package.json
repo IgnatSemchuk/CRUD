@@ -1,19 +1,25 @@
 {
-  "name": "CRUD",
+  "name": "crud",
   "version": "1.0.0",
-  "description": "CRUD",
-  "main": "index.html",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "server": "node server.js",
-    "build": "gulp build",
-    "deploy": "npx gh-pages -d app",
+    "start-server": "cd ./server && npm run start",
+    "start-client": "cd ./client && npm run start",
+    "start": "concurrently --kill-others \"npm run start-server\" \"npm run start-client\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Ihnat Semchuk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IgnatSemchuk/CRUD.git"
+  },
+  "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IgnatSemchuk/CRUD/issues"
+  },
+  "homepage": "https://github.com/IgnatSemchuk/CRUD#readme",
   "devDependencies": {
-    "browser-sync": "^2.26.3",
-    "gh-pages": "^2.0.1",
-    "gulp": "^3.9.1"
+    "concurrently": "^4.1.0"
   }
 }

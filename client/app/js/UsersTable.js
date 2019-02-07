@@ -1,5 +1,7 @@
 import {AppBackend} from './AppBackend.js';
 
+const EDIT_NEXT = 'edit-button' 
+
 export class UsersTable {
 
   constructor() {
@@ -26,7 +28,7 @@ export class UsersTable {
       if (next.hasAttribute('disabled')) {
           next.removeAttribute('disabled');
         };
-      if (event.target.matches('[data-preview]')) {
+      if (event.target.matches(`.${EDIT_NEXT}`)) {
         if (this.page() === 2) {
           event.target.setAttribute('disabled', 'disabled');
         }
@@ -102,16 +104,7 @@ export class UsersTable {
       $('#modal-add-user').modal('hide');
     });
 
-    document.getElementById('si-input-limit').addEventListener('change', async (event) => {
-      this.limitTableRows = event.target.value;
-      this.page = this.initPageIndex();
-      await this.loadUsers();
-      this.renderUsersTable();
-      prev.setAttribute('disabled', 'disabled');
-      if (this.users.length < this.limitTableRows) {
-        next.setAttribute('disabled', 'disabled');
-      }
-    });
+    this.setLimitChange();
   }
 
   initPageIndex() {
@@ -129,6 +122,19 @@ export class UsersTable {
     this.users = await this.backend.get(options);
   }
 
+  setLimitChange() {
+   document.getElementById('si-input-limit').addEventListener('change', async (event) => {
+      this.limitTableRows = event.target.value;
+      this.page = this.initPageIndex();
+      await this.loadUsers();
+      this.renderUsersTable();
+      prev.setAttribute('disabled', 'disabled');
+      if (this.users.length < this.limitTableRows) {
+        next.setAttribute('disabled', 'disabled');
+      }
+    });
+  }
+
   async updateUser(id) {
     const user = await this.backend.get(id);
     return `
@@ -139,7 +145,7 @@ export class UsersTable {
           <textarea class="col form-control" name="description" rows="2">${user.description}</textarea>
         </form>
       </td>
-      <td class="align-middle text-center">
+      <td class="align-middle text-center ${EDIT_NEXT}">
         <button type="button" class="btn btn-outline-primary mb-2" data-update data-id="${id}">Update</button>
       </td>
     `;

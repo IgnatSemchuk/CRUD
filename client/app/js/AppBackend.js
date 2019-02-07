@@ -1,6 +1,7 @@
 export class AppBackend {
   constructor() {
-    this.baseURI = 'https://5bf417c491c25b0013a3b9a2.mockapi.io';
+    //this.baseURI = 'https://5bf417c491c25b0013a3b9a2.mockapi.io';
+    this.baseURI = 'http://localhost:7070';
   }
 
   get(options) {

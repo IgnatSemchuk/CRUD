@@ -1,0 +1,20 @@
+{
+  "name": "CRUD",
+  "version": "1.0.0",
+  "description": "CRUD",
+  "main": "index.html",
+  "scripts": {
+    "server": "node server.js",
+    "build": "gulp build",
+    "start": "gulp",
+    "deploy": "npx gh-pages -d app",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ihnat Semchuk",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.26.3",
+    "gh-pages": "^2.0.1",
+    "gulp": "^3.9.1"
+  }
+}
